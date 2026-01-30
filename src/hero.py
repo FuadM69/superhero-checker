@@ -1,7 +1,6 @@
-import requests
-import re
-
-REQUEST_TIMEOUT_SECONDS = 10
+from .constants import BASE_URL, HEROES_ENDPOINT
+from .http import get
+from .parsers import extract_height_cm
 
 
 def get_tallest_hero(gender: str, has_work: bool) -> dict:
@@ -23,13 +22,8 @@ def get_tallest_hero(gender: str, has_work: bool) -> dict:
         raise ValueError
     if not isinstance(has_work, bool):
         raise ValueError
-    
-    session = requests.Session()
-    session.trust_env = False
-    response = session.get(
-        "https://cdn.jsdelivr.net/gh/akabab/superhero-api@0.3.0/api/all.json",
-        timeout=REQUEST_TIMEOUT_SECONDS
-    )
+
+    response = get(f"{BASE_URL}{HEROES_ENDPOINT}")
     response.raise_for_status()
     heroes = response.json()
 
@@ -46,16 +40,10 @@ def get_tallest_hero(gender: str, has_work: bool) -> dict:
         if has_work != has_occupation:
             continue
 
-        height_str = hero.get("appearance", {}).get("height", [])
-        if not height_str or len(height_str) < 2:
+        height_cm = extract_height_cm(hero)
+        if height_cm <= 0:
             continue
 
-        height_cm_str = height_str[1]
-        match = re.search(r"(\d+(?:\.\d+)?)", height_cm_str)
-        if not match:
-            continue
-
-        height_cm = float(match.group(1))
         matching_heroes.append((height_cm, hero))
 
     if not matching_heroes:
