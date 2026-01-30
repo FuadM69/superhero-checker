@@ -1,0 +1,5 @@
+GENDER_MALE = "Male"
+GENDER_FEMALE = "Female"
+GENDER_NO_MATCH = "Unknown"
+HAS_WORK_TRUE = True
+HAS_WORK_FALSE = False
